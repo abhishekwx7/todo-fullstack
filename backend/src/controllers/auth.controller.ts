@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { signupSchema, signinSchema } from "../validations/auth.validation";
 import * as authService from "../services/auth.service";
+import prisma from "../config/prisma";
+import { AuthRequest } from "../middleware/auth.middleware";
 
 export async function signup(req: Request, res: Response) {
     try {
@@ -36,5 +38,38 @@ export async function signin(req: Request, res: Response) {
         res.status(400).json({
             message: err.message
         });
+    }
+}
+
+export async function getMe(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.userId,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found!"
+            })
+        }
+
+        return res.json({
+            user,
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Something went wrong!"
+        })
     }
 }
