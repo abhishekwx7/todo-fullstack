@@ -12,3 +12,6 @@ backend/.env
 
 # Prisma generated client (if applicable)
 backend/src/generated/prisma/
+
+backend/.claude/skills/
+backend/skills-lock.json

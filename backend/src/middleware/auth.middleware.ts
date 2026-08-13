@@ -33,13 +33,14 @@ export function authMiddleware(
 
         const decoded = jwt.verify(
             token,
-            process.env.SECRET!,
+            process.env.JWT_SECRET!,
         ) as JWTPayload;
 
         req.userId = decoded.id;
 
         next();
     } catch (error) {
+        console.log("JWT ERROR", error);
         return res.status(401).json({
             message: "Invalid or expired token!"
         })
