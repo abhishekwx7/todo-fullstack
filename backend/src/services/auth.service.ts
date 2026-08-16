@@ -1,6 +1,6 @@
-import prisma from "../config/prisma";
+import prisma from "../config/prisma.js";
 import bcrypt from "bcrypt";
-import { generateToken } from "../utils/jwt";
+import { generateToken } from "../utils/jwt.js";
 
 export async function signup(
     name: string,

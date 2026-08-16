@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { signupSchema, signinSchema } from "../validations/auth.validation";
-import * as authService from "../services/auth.service";
-import prisma from "../config/prisma";
-import { AuthRequest } from "../middleware/auth.middleware";
+import { signupSchema, signinSchema } from "../validations/auth.validation.js";
+import * as authService from "../services/auth.service.js";
+import prisma from "../config/prisma.js";
+import { AuthRequest } from "../middleware/auth.middleware.js";
 
 export async function signup(req: Request, res: Response) {
     try {
