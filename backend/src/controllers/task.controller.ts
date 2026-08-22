@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import * as taskService from "../services/task.service.js";
+import { createTaskSchema } from "../validations/task.validation.js";
+
 
 export async function createTask(
     req: AuthRequest,
@@ -8,10 +10,49 @@ export async function createTask(
 ) {
     try {
         // 1. Get authenticated user
+
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!"
+            })
+        }
+
         // 2. Get projectId from req.params
-        // 3. Get task data from req.body
-        // 4. Call taskService.createTask()
+
+        const projectId = String(req.params.projectId)
+
+        if (!projectId) {
+            return res.status(400).json({
+                message: "Project ID is required!"
+            })
+        }
+
+        const result = createTaskSchema.safeParse(req.body);
+
+        // 3. Validate task data
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: "Invalid task data",
+                errors: result.error,
+            })
+        }
+
+        // 4. Call task service
+
+        const task = await taskService.createTask(
+            projectId,
+            result.data,
+            req.userId
+        );
+
         // 5. Return created task
+
+        return res.status(201).json({
+            task,
+        })
+
+
     } catch (error) {
         console.log(error);
 
@@ -26,9 +67,34 @@ export async function getTasks(
     res: Response,
 ) {
     try {
-        // Get authenticated user's tasks
-        // Call taskService.getTasks()
-        // Return tasks
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!"
+            });
+        }
+
+        const projectId = String(req.params.projectId);
+
+        if (!projectId || Array.isArray(projectId)) {
+            return res.status(400).json({
+                message: "Project ID is required!"
+            })
+        }
+
+        const tasks = await taskService.getTasks(
+            projectId,
+            req.userId,
+        )
+
+        if (!tasks) {
+            return res.status(404).json({
+                message: "Project not found!"
+            })
+        }
+
+        return res.status(200).json({
+            tasks
+        })
     } catch (error) {
         console.log(error);
 
@@ -43,10 +109,15 @@ export async function getTask(
     res: Response,
 ) {
     try {
-        // Get task id from req.params
-        // Get authenticated user
-        // Call taskService.getTask()
-        // Return task
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!"
+            })
+        }
+
+        const id = String(req.params.id);
+
+        const task = await taskService.getTasks
     } catch (error) {
         console.log(error);
 

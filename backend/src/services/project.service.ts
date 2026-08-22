@@ -1,14 +1,13 @@
 import prisma from "../config/prisma.js";
+import type { CreateProjectInput } from "../validations/project.validation.js";
 
 export async function createProject(
-    name: string,
-    color: string | undefined,
+    data: CreateProjectInput,
     userId: string
 ) {
     const project = await prisma.project.create({
         data: {
-            name,
-            color,
+            ...data,
             userId
         }
     });

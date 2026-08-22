@@ -1,29 +1,30 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import * as projectService from "../services/project.service.js";
+import { createProjectSchema, updateProjectSchema } from "../validations/project.validation.js"
 
 export async function createProject(
     req: AuthRequest,
     res: Response
 ) {
     try {
-        const { name, color } = req.body;
-
-        if (!name || typeof name !== "string" || name.trim() === "") {
-            return res.status(400).json({
-                message: "Project name is required!"
-            })
-        }
-
         if (!req.userId) {
             return res.status(401).json({
                 message: "Unauthorized!"
             })
         }
 
+        const result = createProjectSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: "Invalid project data",
+                errors: result.error,
+            })
+        }
+
         const project = await projectService.createProject(
-            name,
-            color,
+            result.data,
             req.userId
         );
 
@@ -101,55 +102,55 @@ export async function getProject(
 
 export async function updateProject(
     req: AuthRequest,
-    res: Response
+    res: Response,
 ) {
     try {
         if (!req.userId) {
             return res.status(401).json({
-                message: "Unauthorized!"
-            })
-        }
-
-        const id = String(req.params.id);
-        const { name, color } = req.body;
-
-        if (name === undefined && color === undefined) {
-            return res.status(400).json({
-                message: "Nothing to update!"
-            })
-        }
-
-        const result = await projectService.updateProject(
-            id,
-            req.userId,
-            {
-                name, color,
-            }
-        );
-
-        if (result.count === 0) {
-            return res.status(404).json({
-                message: "Project not found!"
+                message: "Unauthorized!",
             });
         }
 
-        const updatedProject = await projectService.getProjectById(
-            id, req.userId,
-        )
+        const id = String(req.params.id);
+
+        const result = updateProjectSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: "Invalid project data",
+                errors: result.error,
+            });
+        }
+
+        const updateResult = await projectService.updateProject(
+            id,
+            req.userId,
+            result.data,
+        );
+
+        if (updateResult.count === 0) {
+            return res.status(404).json({
+                message: "Project not found!",
+            });
+        }
+
+        const updatedProject =
+            await projectService.getProjectById(
+                id,
+                req.userId,
+            );
 
         return res.status(200).json({
             project: updatedProject,
         });
-
     } catch (error) {
         console.log(error);
 
         return res.status(500).json({
-            message: "Failed to update project!"
-        })
+            message: "Failed to update project!",
+        });
     }
 }
-
 export async function deleteProject(
     req: AuthRequest,
     res: Response

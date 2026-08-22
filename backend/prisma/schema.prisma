@@ -17,7 +17,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   projects Project[]
-  tasks    Task[]
 }
 
 model Project {
@@ -42,9 +41,6 @@ model Task {
 
   projectId   String
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  userId      String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
