@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
-import type { CreateTaskInput } from "../validations/task.validation.js";
+import type { CreateTaskInput, UpdateTaskInput } from "../validations/task.validation.js";
+
 
 export async function createTask(
     projectId: string,
@@ -49,4 +50,39 @@ export async function getTasks(projectId: string, userId: string) {
             createdAt: "desc"
         }
     })
+}
+
+export async function getTasksById(taskId: string, userId: string) {
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            project: {
+                userId,
+            },
+        },
+    });
+
+    return task;
+}
+
+export async function updateTask(taskId: string, data: UpdateTaskInput, userId: string) {
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            project: {
+                userId,
+            }
+        },
+    });
+
+    if (!task) {
+        return null;
+    }
+
+    return prisma.task.update({
+        where: {
+            id: taskId,
+        },
+        data,
+    });
 }

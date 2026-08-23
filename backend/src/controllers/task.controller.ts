@@ -1,8 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import * as taskService from "../services/task.service.js";
-import { createTaskSchema } from "../validations/task.validation.js";
-
+import { createTaskSchema, updateTaskSchema } from "../validations/task.validation.js";
 
 export async function createTask(
     req: AuthRequest,
@@ -109,15 +108,39 @@ export async function getTask(
     res: Response,
 ) {
     try {
+        // Check authenticated user
         if (!req.userId) {
             return res.status(401).json({
                 message: "Unauthorized!"
             })
         }
 
-        const id = String(req.params.id);
+        // Get the taskId as a parameter from params
+        const taskId = String(req.params.id);
 
-        const task = await taskService.getTasks
+        if (!taskId) {
+            return res.status(400).json({
+                message: "Task ID is required!"
+            });
+        }
+
+        // Get task through service.
+        const task = await taskService.getTasksById(
+            taskId,
+            req.userId,
+        );
+
+        // task doesn't exist OR doesn't belong to the user
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found!"
+            });
+        }
+
+        // Return task
+        return res.status(200).json({
+            task,
+        })
     } catch (error) {
         console.log(error);
 
@@ -132,11 +155,44 @@ export async function updateTask(
     res: Response,
 ) {
     try {
-        // Get task id from req.params
-        // Get authenticated user
-        // Get update data from req.body
-        // Call taskService.updateTask()
-        // Return updated task
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!"
+            });
+        }
+
+        const taskid = String(req.params.id);
+
+        if (!taskid) {
+            return res.status(400).json({
+                message: "Task ID is required!"
+            });
+        }
+
+        const result = updateTaskSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: "Invalid task data",
+                errors: result.error,
+            })
+        }
+
+        const updatedTask = await taskService.updateTask(
+            taskid,
+            result.data,
+            req.userId,
+        )
+
+        if (!updatedTask) {
+            return res.status(404).json({
+                message: "Task not found!"
+            })
+        }
+
+        return res.status(200).json({
+            task: updatedTask,
+        })
     } catch (error) {
         console.log(error);
 

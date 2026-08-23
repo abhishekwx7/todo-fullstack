@@ -1,5 +1,5 @@
 import prisma from "../config/prisma.js";
-import type { CreateProjectInput } from "../validations/project.validation.js";
+import type { CreateProjectInput, UpdateProjectInput } from "../validations/project.validation.js";
 
 export async function createProject(
     data: CreateProjectInput,
@@ -41,10 +41,7 @@ export async function getProjectById(
 export async function updateProject(
     id: string,
     userId: string,
-    data: {
-        name?: string;
-        color?: string;
-    }
+    data: UpdateProjectInput
 ) {
     return prisma.project.updateMany({
         where: {
