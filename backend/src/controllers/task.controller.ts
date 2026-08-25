@@ -208,9 +208,35 @@ export async function deleteTask(
 ) {
     try {
         // Get task id from req.params
-        // Get authenticated user
-        // Call taskService.deleteTask()
-        // Return success response
+        if (!req.userId) {
+            return res.status(400).json({
+                message: "Unauthorized!"
+            })
+        }
+
+        const taskId = String(req.params.id);
+
+        if (!taskId) {
+            return res.status(400).json({
+                message: "Task ID is required!"
+            });
+        }
+
+        const deletedTask = await taskService.deleteTask(
+            taskId,
+            req.userId,
+        );
+
+        if (!deletedTask) {
+            return res.status(404).json({
+                message: "Task not found!"
+            })
+        }
+
+        return res.status(200).json({
+            message: "Task deleted successfully!",
+            task: deletedTask,
+        })
     } catch (error) {
         console.log(error);
 
