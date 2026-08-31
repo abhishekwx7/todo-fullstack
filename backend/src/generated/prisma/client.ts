@@ -51,3 +51,13 @@ export type User = Prisma.UserModel
  * 
  */
 export type Project = Prisma.ProjectModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel
+/**
+ * Model Label
+ * 
+ */
+export type Label = Prisma.LabelModel

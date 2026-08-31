@@ -8,15 +8,11 @@ export async function createTask(
     res: Response,
 ) {
     try {
-        // 1. Get authenticated user
-
         if (!req.userId) {
             return res.status(401).json({
                 message: "Unauthorized!"
             })
         }
-
-        // 2. Get projectId from req.params
 
         const projectId = String(req.params.projectId)
 
@@ -28,8 +24,6 @@ export async function createTask(
 
         const result = createTaskSchema.safeParse(req.body);
 
-        // 3. Validate task data
-
         if (!result.success) {
             return res.status(400).json({
                 message: "Invalid task data",
@@ -37,15 +31,11 @@ export async function createTask(
             })
         }
 
-        // 4. Call task service
-
         const task = await taskService.createTask(
             projectId,
             result.data,
             req.userId
         );
-
-        // 5. Return created task
 
         return res.status(201).json({
             task,
@@ -108,14 +98,12 @@ export async function getTask(
     res: Response,
 ) {
     try {
-        // Check authenticated user
         if (!req.userId) {
             return res.status(401).json({
                 message: "Unauthorized!"
             })
         }
 
-        // Get the taskId as a parameter from params
         const taskId = String(req.params.id);
 
         if (!taskId) {
@@ -124,20 +112,17 @@ export async function getTask(
             });
         }
 
-        // Get task through service.
         const task = await taskService.getTasksById(
             taskId,
             req.userId,
         );
 
-        // task doesn't exist OR doesn't belong to the user
         if (!task) {
             return res.status(404).json({
                 message: "Task not found!"
             });
         }
 
-        // Return task
         return res.status(200).json({
             task,
         })
@@ -207,7 +192,6 @@ export async function deleteTask(
     res: Response,
 ) {
     try {
-        // Get task id from req.params
         if (!req.userId) {
             return res.status(400).json({
                 message: "Unauthorized!"
