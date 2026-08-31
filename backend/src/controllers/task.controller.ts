@@ -14,9 +14,9 @@ export async function createTask(
             })
         }
 
-        const projectId = String(req.params.projectId)
+        const projectId = req.params.projectId;
 
-        if (!projectId) {
+        if (!projectId || Array.isArray(projectId)) {
             return res.status(400).json({
                 message: "Project ID is required!"
             })
@@ -36,6 +36,12 @@ export async function createTask(
             result.data,
             req.userId
         );
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Project not found!"
+            })
+        }
 
         return res.status(201).json({
             task,
@@ -62,7 +68,8 @@ export async function getTasks(
             });
         }
 
-        const projectId = String(req.params.projectId);
+        const projectId = req.params.projectId;
+        console.log(req.params);
 
         if (!projectId || Array.isArray(projectId)) {
             return res.status(400).json({
@@ -104,15 +111,15 @@ export async function getTask(
             })
         }
 
-        const taskId = String(req.params.id);
+        const taskId = req.params.id;
 
-        if (!taskId) {
+        if (!taskId || Array.isArray(taskId)) {
             return res.status(400).json({
                 message: "Task ID is required!"
             });
         }
 
-        const task = await taskService.getTasksById(
+        const task = await taskService.getTaskById(
             taskId,
             req.userId,
         );
@@ -146,9 +153,9 @@ export async function updateTask(
             });
         }
 
-        const taskid = String(req.params.id);
+        const taskid = req.params.id;
 
-        if (!taskid) {
+        if (!taskid || Array.isArray(taskid)) {
             return res.status(400).json({
                 message: "Task ID is required!"
             });
@@ -193,14 +200,14 @@ export async function deleteTask(
 ) {
     try {
         if (!req.userId) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: "Unauthorized!"
             })
         }
 
-        const taskId = String(req.params.id);
+        const taskId = req.params.id;
 
-        if (!taskId) {
+        if (!taskId || Array.isArray(taskId)) {
             return res.status(400).json({
                 message: "Task ID is required!"
             });

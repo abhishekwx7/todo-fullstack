@@ -1,7 +1,19 @@
 import { Router } from "express";
-import { createProject, getProjects, getProject, updateProject, deleteProject } from "../controllers/project.controller.js";
+
+import {
+    createProject,
+    getProjects,
+    getProject,
+    updateProject,
+    deleteProject,
+} from "../controllers/project.controller.js";
+
+import {
+    createTask,
+    getTasks,
+} from "../controllers/task.controller.js";
+
 import { authMiddleware } from "../middleware/auth.middleware.js";
-import { createTask } from "../controllers/task.controller.js";
 
 const router = Router();
 
@@ -12,6 +24,8 @@ router.get("/:id", authMiddleware, getProject);
 router.patch("/:id", authMiddleware, updateProject);
 router.delete("/:id", authMiddleware, deleteProject);
 
+// Tasks belonging to a project
 router.post("/:projectId/tasks", authMiddleware, createTask);
+router.get("/:projectId/tasks", authMiddleware, getTasks);
 
 export default router;

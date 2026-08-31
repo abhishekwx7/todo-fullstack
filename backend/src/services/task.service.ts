@@ -8,7 +8,7 @@ export async function createTask(
     userId: string
 ) {
 
-    const project = await prisma.project.FindFirst({
+    const project = await prisma.project.findFirst({
         where: {
             id: projectId,
             userId,
@@ -23,7 +23,6 @@ export async function createTask(
         data: {
             ...data,
             projectId,
-            userId
         }
     });
 
@@ -52,7 +51,7 @@ export async function getTasks(projectId: string, userId: string) {
     })
 }
 
-export async function getTasksById(taskId: string, userId: string) {
+export async function getTaskById(taskId: string, userId: string) {
     const task = await prisma.task.findFirst({
         where: {
             id: taskId,

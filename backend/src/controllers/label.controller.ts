@@ -132,7 +132,7 @@ export async function updateLabel(
         const result = updateLabelSchema.safeParse(req.body);
 
         if (!result.success) {
-            return res.status(200).json({
+            return res.status(400).json({
                 message: "Invalid label data",
                 errors: result.error,
             });
