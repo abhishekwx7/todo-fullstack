@@ -59,6 +59,9 @@ export async function getTaskById(taskId: string, userId: string) {
                 userId,
             },
         },
+        include: {
+            labels: true,
+        }
     });
 
     return task;
@@ -107,4 +110,96 @@ export async function deleteTask(
             id: taskId,
         }
     })
+}
+
+export async function attachLabelToTask(
+    taskId: string,
+    labelId: string,
+    userId: string
+) {
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            project: {
+                userId,
+            },
+        },
+    });
+
+    if (!task) {
+        throw new Error("Task not found");
+    }
+
+    const label = await prisma.task.update({
+        where: {
+            id: labelId,
+            userId,
+        },
+    });
+
+    if (!label) {
+        throw new Error("Label not found");
+    }
+
+    return prisma.task.update({
+        where: {
+            id: taskId,
+        },
+        data: {
+            labels: {
+                connect: {
+                    id: labelId,
+                },
+            },
+        },
+        include: {
+            labels: true,
+        },
+    });
+}
+
+export async function removeLabelfromTask(
+    taskId: string,
+    labelId: string,
+    userId: string,
+) {
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            project: {
+                userId,
+            },
+        },
+    });
+
+    if (!task) {
+        throw new Error("Task not found")
+    }
+
+    const label = await prisma.label.findFirst({
+        where: {
+            id: labelId,
+            userId,
+        },
+    });
+
+    if (!label) {
+        throw new Error("Label not found")
+    }
+
+    return prisma.task.update({
+        where: {
+            id: taskId,
+        },
+        data: {
+            labels: {
+                disconnect: {
+                    id: labelId,
+                },
+            },
+        },
+        include: {
+            labels: true,
+        },
+    });
 }

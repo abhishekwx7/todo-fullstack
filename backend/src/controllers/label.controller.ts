@@ -2,7 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import * as labelService from "../services/label.service.js"
 import { createLabelSchema, updateLabelSchema } from "../validations/label.validation.js"
-import { id } from "zod/locales";
+
 
 export async function createLabel(
     req: AuthRequest,

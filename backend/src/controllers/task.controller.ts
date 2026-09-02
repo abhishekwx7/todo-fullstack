@@ -236,3 +236,92 @@ export async function deleteTask(
         });
     }
 }
+
+export async function attachLabel(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!"
+            });
+        }
+
+        const taskId = req.params.taskId;
+        const labelId = req.params.labelId;
+
+        if (!taskId || !labelId || Array.isArray(taskId) || Array.isArray(labelId)) {
+            return res.status(400).json({
+                message: "Task ID and label ID are not required!"
+            });
+        }
+
+        const task = await taskService.attachLabelToTask(
+            taskId,
+            labelId,
+            req.userId
+        )
+
+        return res.status(200).json({
+            message: "Label attached successfully!",
+            task,
+        })
+
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === "Task not found") {
+                return res.status(400).json({
+                    message: error.message,
+                });
+            }
+
+            if (error.message === "Label not found") {
+                return res.status(400).json({
+                    message: error.message,
+                })
+            }
+        }
+        console.log(error);
+
+        return res.status(500).json({
+            message: "Failed to attach label!",
+        })
+    }
+}
+
+export async function removeLabel(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({
+                message: "Unauthorized!",
+            });
+        }
+
+        const taskId = req.params.taskId;
+        const labelId = req.params.labelId;
+
+        if (!taskId || !labelId || Array.isArray(taskId) || Array.isArray(labelId)) {
+            return res.status(400).json({
+                message: "Task ID and label ID are required!"
+            });
+        }
+
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === "Task not found" || error.message === "Label not found") {
+                return res.status(400).json({
+                    message: error.message,
+                })
+            }
+        }
+        console.log(error);
+
+        return res.status(500).json({
+            message: "Failed to remove label!"
+        })
+    }
+}
