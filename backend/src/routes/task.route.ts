@@ -17,6 +17,6 @@ router.patch("/:id", authMiddleware, updateTask);
 router.delete("/:id", authMiddleware, deleteTask);
 
 router.post("/:taskId/labels/:labelId", authMiddleware, attachLabel);
-router.post("/:taskId/labels/:labelId", authMiddleware, removeLabel);
+router.delete("/:taskId/labels/:labelId", authMiddleware, removeLabel);
 
 export default router;

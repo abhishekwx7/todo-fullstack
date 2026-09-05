@@ -130,7 +130,7 @@ export async function attachLabelToTask(
         throw new Error("Task not found");
     }
 
-    const label = await prisma.task.update({
+    const label = await prisma.task.findFirst({
         where: {
             id: labelId,
             userId,
