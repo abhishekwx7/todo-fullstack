@@ -253,7 +253,7 @@ export async function attachLabel(
 
         if (!taskId || !labelId || Array.isArray(taskId) || Array.isArray(labelId)) {
             return res.status(400).json({
-                message: "Task ID and label ID are not required!"
+                message: "Task ID and label ID are required!"
             });
         }
 
@@ -309,6 +309,17 @@ export async function removeLabel(
                 message: "Task ID and label ID are required!"
             });
         }
+
+        const task = await taskService.removeLabelfromTask(
+            taskId,
+            labelId,
+            req.userId
+        )
+
+        return res.status(200).json({
+            message: "Label removed successfully!",
+            task,
+        })
 
     } catch (error) {
         if (error instanceof Error) {

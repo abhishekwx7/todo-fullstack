@@ -45,6 +45,9 @@ export async function getTasks(projectId: string, userId: string) {
         where: {
             projectId,
         },
+        include: {
+            labels: true,
+        },
         orderBy: {
             createdAt: "desc"
         }
@@ -130,7 +133,7 @@ export async function attachLabelToTask(
         throw new Error("Task not found");
     }
 
-    const label = await prisma.task.findFirst({
+    const label = await prisma.label.findFirst({
         where: {
             id: labelId,
             userId,
