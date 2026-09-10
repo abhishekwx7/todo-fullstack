@@ -21,7 +21,13 @@ export async function signup(
         data: {
             name,
             email,
-            password: hashed
+            password: hashed,
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
         }
     });
 
@@ -49,8 +55,10 @@ export async function signin(
         throw new Error("Invalid credentials");
     }
 
+    const { password: _, ...safeUser } = user;
+
     return {
         token: generateToken(user.id),
-        user
+        user: safeUser,
     };
 }
