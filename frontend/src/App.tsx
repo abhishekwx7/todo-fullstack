@@ -1,10 +1,19 @@
-import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import SignUpPage from "./pages/SignUp";
+import SignInPage from "./pages/SignIn";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold">Todo App</h1>
-    </div>
+    <Routes>
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/signin" element={<SignInPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Dashboard />} />
+      </Route>
+    </Routes>
   );
 }
 

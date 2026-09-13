@@ -54,9 +54,7 @@ export default function SigninPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded border px-3 py-2"
               placeholder="john123@gmail.com"
               required
@@ -69,9 +67,7 @@ export default function SigninPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded border px-3 py-2"
               placeholder="Enter password"
               required
@@ -83,14 +79,14 @@ export default function SigninPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded bg-black px-4 py-2 text-white disabled:op"
+            className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-400">
-          Already have an account{""}
+          Don't have an account?{" "}
           <Link to="/signup" className="font-medium text-blue-600">
             Sign Up
           </Link>

@@ -14,7 +14,7 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setError("");
@@ -48,15 +48,15 @@ export default function SignUpPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow">
         <h1 className="mb-6 text-2xl font-bold">Create Account</h1>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Name</label>
+
             <input
               type="text"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded border px-3 py-2"
               placeholder="John Doe"
               required
@@ -65,12 +65,11 @@ export default function SignUpPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium">Email</label>
+
             <input
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded border px-3 py-2"
               placeholder="johndoe123@gmail.com"
               required
@@ -83,9 +82,7 @@ export default function SignUpPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded border px-3 py-2"
               placeholder="Enter password"
               required
@@ -97,14 +94,14 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded bg-black px-4 py-2 text-white disabled:op"
+            className="w-full rounded bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-400">
-          Already have an account ?{" "}
+          Already have an account?{" "}
           <Link to="/signin" className="font-medium text-blue-600">
             Sign in
           </Link>
