@@ -3,6 +3,7 @@ import SignUpPage from "./pages/SignUp";
 import SignInPage from "./pages/SignIn";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import ProjectPage from "./pages/ProjectPage";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/projects/:projectId" element={<ProjectPage />} />
       </Route>
     </Routes>
   );

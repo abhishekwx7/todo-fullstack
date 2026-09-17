@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -9,6 +10,7 @@ import type { CreateProjectInput, Project } from "../types/projects";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectName, setProjectName] = useState("");
@@ -45,7 +47,7 @@ export default function Dashboard() {
     fetchProjects();
   }, []);
 
-  async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCreateProject(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!projectName.trim()) {
@@ -160,7 +162,11 @@ export default function Dashboard() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <div key={project.id} className="rounded-lg bg-white p-5 shadow">
+              <div
+                key={project.id}
+                className="rounded-lg bg-white p-5 shadow transition hover:shadow:md cursor-pointer"
+                onClick={() => navigate(`/projects/${project.id}`)}
+              >
                 <div className="mb-3 flex items-center gap-3">
                   <div
                     className="h-4 w-4 rounded-full"
