@@ -155,6 +155,63 @@ export default function ProjectPage() {
     }
   }
 
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [editTaskName, setEditTaskName] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  function openEditDialog(task: Task) {
+    setTaskToEdit(task);
+    setEditTaskName(task.name);
+
+    if (task.dueDate) {
+      setEditDueDate(task.dueDate.slice(0, 10));
+    } else {
+      setEditDueDate("");
+    }
+  }
+
+  async function handleEditTask(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!taskToEdit || !editTaskName.trim()) {
+      return;
+    }
+
+    try {
+      setError("");
+      setIsUpdating(true);
+
+      const updatedTask = await updateTask(taskToEdit.id, {
+        name: editTaskName.trim(),
+        ...(editDueDate && {
+          dueDate: new Date(editDueDate).toISOString(),
+        }),
+      });
+
+      setTasks((prev) =>
+        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+      );
+
+      setTaskToEdit(null);
+      setEditTaskName("");
+      setEditDueDate("");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to update task";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-5xl px-6 py-8">
@@ -231,12 +288,21 @@ export default function ProjectPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => setTaskToDelete(task)}
-                    className="rounded bg-red-500 px-3 py-1 text-sm text-white"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditDialog(task)}
+                      className="rounded bg-blue-500 px-3 py-1 text-sm text-white"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => setTaskToDelete(task)}
+                      className="rounded bg-red-500 px-3 py-1 text-sm text-white"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -270,6 +336,62 @@ export default function ProjectPage() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {taskToEdit && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+            <form
+              onSubmit={handleEditTask}
+              className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg"
+            >
+              <h2 className="text-lg font-semibold">Edit Task</h2>
+
+              <div className="mt-4">
+                <label className="mb-1 block text-sm font-medium">
+                  Task name
+                </label>
+
+                <input
+                  type="text"
+                  value={editTaskName}
+                  onChange={(e) => setEditTaskName(e.target.value)}
+                  className="w-full rounded border px-3 py-2"
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-1 block text-sm font-medium">
+                  Due Date
+                </label>
+
+                <input
+                  type="text"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-full rounded border px-3 py-2"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setTaskToEdit(null)}
+                  disabled={isUpdating}
+                  className="rounded border px-4 py-2"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isUpdating || !editTaskName.trim()}
+                  className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+                >
+                  {isUpdating ? "Saving" : "Save"}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </main>
