@@ -28,3 +28,22 @@ export async function createTask(
 
     return response.data.task;
 }
+
+export interface UpdateTaskInput {
+    name?: string;
+    dueDate?: string;
+    isCompleted?: boolean;
+}
+
+interface UpdateTaskResponse {
+    task: Task;
+}
+
+export async function updateTask(
+    taskId: string,
+    data: UpdateTaskInput
+) {
+    const response = await api.patch<UpdateTaskResponse>(`/tasks/${taskId}`, data);
+
+    return response.data.task;
+}

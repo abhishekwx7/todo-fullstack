@@ -5,15 +5,17 @@ import React, { useState, useEffect } from "react";
 import {
   createTask,
   getTasks,
+  updateTask,
   type CreateTaskInput,
 } from "../services/task.service";
+
 import type { Task } from "../types/task";
 
 export default function ProjectPage() {
   const { projectId } = useParams();
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -45,14 +47,14 @@ export default function ProjectPage() {
     fetchTasks();
   }, [projectId]);
 
-  const [taskname, setTaskName] = useState("");
+  const [taskName, setTaskName] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   async function handleCreateTask(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!projectId || !taskname.trim()) {
+    if (!projectId || !taskName.trim()) {
       return;
     }
 
@@ -61,7 +63,7 @@ export default function ProjectPage() {
       setIsCreating(true);
 
       const data: CreateTaskInput = {
-        name: taskname.trim(),
+        name: taskName.trim(),
       };
 
       if (dueDate) {
@@ -90,6 +92,35 @@ export default function ProjectPage() {
     }
   }
 
+  async function handleToggleTask(task: Task) {
+    try {
+      setError("");
+
+      const updatedTask = await updateTask(task.id, {
+        isCompleted: !task.isCompleted,
+      });
+
+      setTasks((prev) =>
+        prev.map((item) => (item.id === updatedTask.id ? updatedTask : item)),
+      );
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to update task";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    }
+  }
+
+  const sortedTask = [...tasks].sort(
+    (a, b) => Number(a.isCompleted) - Number(b.isCompleted),
+  );
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-5xl px-6 py-8">
@@ -105,7 +136,7 @@ export default function ProjectPage() {
         >
           <input
             type="text"
-            value={taskname}
+            value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
             placeholder="Task Name"
             className="flex-1 rounded border px-3 py-2"
@@ -120,10 +151,10 @@ export default function ProjectPage() {
 
           <button
             type="submit"
-            disabled={isCreating || !taskname.trim()}
+            disabled={isCreating || !taskName.trim()}
             className="rounded bg-blue-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isCreating ? "Creating" : "Add Task.."}
+            {isCreating ? "Creating..." : "Add Task"}
           </button>
         </form>
 
@@ -133,15 +164,37 @@ export default function ProjectPage() {
           <p className="text-gray-500">No tasks yet. Create your first task.</p>
         ) : (
           <div className="space-y-3">
-            {tasks.map((task) => (
-              <div key={task.id} className="rounded-lg bg-white p-4 shadow">
-                <h2 className="font-semibold">{task.name}</h2>
+            {sortedTask.map((task) => (
+              <div
+                key={task.id}
+                className={`rounded-lg p-4 shadow ${
+                  task.isCompleted ? "bg-green-100" : "bg-white"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={task.isCompleted}
+                    onChange={() => handleToggleTask(task)}
+                    className="mt-1 h-4 w-4"
+                  />
 
-                {task.dueDate && (
-                  <p className="">
-                    Due: {new Date(task.dueDate).toLocaleDateString()}
-                  </p>
-                )}
+                  <div>
+                    <h2
+                      className={`font-semibold ${
+                        task.isCompleted ? "text-green-700 line-through" : ""
+                      }`}
+                    >
+                      {task.name}
+                    </h2>
+
+                    {task.dueDate && (
+                      <p className="text-sm text-gray-600">
+                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
