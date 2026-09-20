@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 
 import {
   createTask,
+  deleteTask,
   getTasks,
   updateTask,
   type CreateTaskInput,
@@ -121,6 +122,39 @@ export default function ProjectPage() {
     (a, b) => Number(a.isCompleted) - Number(b.isCompleted),
   );
 
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDeleteTask() {
+    if (!taskToDelete) {
+      return;
+    }
+
+    try {
+      setError("");
+      setIsDeleting(true);
+
+      await deleteTask(taskToDelete.id);
+
+      setTasks((prev) => prev.filter((task) => task.id !== taskToDelete.id));
+
+      setTaskToDelete(null);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to delete task";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-5xl px-6 py-8">
@@ -171,32 +205,71 @@ export default function ProjectPage() {
                   task.isCompleted ? "bg-green-100" : "bg-white"
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={task.isCompleted}
-                    onChange={() => handleToggleTask(task)}
-                    className="mt-1 h-4 w-4"
-                  />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={task.isCompleted}
+                      onChange={() => handleToggleTask(task)}
+                      className="mt-1 h-4 w-4"
+                    />
 
-                  <div>
-                    <h2
-                      className={`font-semibold ${
-                        task.isCompleted ? "text-green-700 line-through" : ""
-                      }`}
-                    >
-                      {task.name}
-                    </h2>
+                    <div>
+                      <h2
+                        className={`font-semibold ${
+                          task.isCompleted ? "text-green-700 line-through" : ""
+                        }`}
+                      >
+                        {task.name}
+                      </h2>
 
-                    {task.dueDate && (
-                      <p className="text-sm text-gray-600">
-                        Due: {new Date(task.dueDate).toLocaleDateString()}
-                      </p>
-                    )}
+                      {task.dueDate && (
+                        <p className="text-sm text-gray-600">
+                          Due: {new Date(task.dueDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
+
+                  <button
+                    onClick={() => setTaskToDelete(task)}
+                    className="rounded bg-red-500 px-3 py-1 text-sm text-white"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {taskToDelete && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="text-lg font-semibold">Delete task?</h2>
+
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete "{taskToDelete.name}"?
+              </p>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => setTaskToDelete(null)}
+                  disabled={isDeleting}
+                  className="rounded border px-4 py-2"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleDeleteTask}
+                  disabled={isDeleting}
+                  className="rounded bg-red-600 px-4 py-2 text-shite disabled:opacity-50"
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>
