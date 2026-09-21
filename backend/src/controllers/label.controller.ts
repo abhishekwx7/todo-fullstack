@@ -100,7 +100,7 @@ export async function getLabelById(
             req.userId
         )
 
-        if (!labelId) {
+        if (!label) {
             return res.status(404).json({
                 message: "Label not found!"
             })

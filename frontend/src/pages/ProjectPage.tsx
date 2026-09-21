@@ -11,6 +11,14 @@ import {
 } from "../services/task.service";
 
 import type { Task } from "../types/task";
+import type { Label } from "../types/label";
+
+import {
+  createLabel,
+  getLabels,
+  attachLabelToTask,
+  removeLabelFromTask,
+} from "../services/label.service";
 
 export default function ProjectPage() {
   const { projectId } = useParams();
@@ -212,6 +220,126 @@ export default function ProjectPage() {
     }
   }
 
+  const [labels, setLabels] = useState<Label[]>([]);
+
+  const [labelTask, setLabelTask] = useState<Task | null>(null);
+
+  const [newLabelName, setNewLabelName] = useState("");
+  const [newLabelColor, setNewLabelColor] = useState("#3b82f6");
+
+  const [isCreatingLabel, setIsCreatingLabel] = useState(false);
+
+  useEffect(() => {
+    async function fetchLabels() {
+      try {
+        const data = await getLabels();
+
+        setLabels(data);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const message =
+            error.response?.data?.message || "Failed to fetch labels";
+
+          setError(message);
+        } else {
+          setError("Something went wrong!");
+        }
+      }
+    }
+
+    fetchLabels();
+  }, []);
+
+  async function handleAttachLabel(label: Label) {
+    if (!labelTask) {
+      return;
+    }
+
+    try {
+      setError("");
+
+      const updatedTask = await attachLabelToTask(labelTask.id, label.id);
+
+      setTasks((prev) =>
+        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+      );
+
+      setLabelTask(updatedTask);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || "Failed to attach label";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    }
+  }
+
+  async function handleRemoveLabel(taskId: string, labelId: string) {
+    try {
+      setError("");
+
+      const updatedTask = await removeLabelFromTask(taskId, labelId);
+
+      setTasks((prev) =>
+        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+      );
+
+      if (labelTask?.id === updatedTask.id) {
+        setLabelTask(updatedTask);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || "Failed to remove label";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    }
+  }
+
+  async function handleCreateLabel(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!newLabelName.trim()) {
+      return;
+    }
+
+    try {
+      setError("");
+      setIsCreatingLabel(true);
+
+      const newLabel = await createLabel({
+        name: newLabelName.trim(),
+        color: newLabelColor,
+      });
+
+      setLabels((prev) => [newLabel, ...prev]);
+
+      setNewLabelName("");
+      setNewLabelColor("#3b82f6");
+
+      if (labelTask) {
+        await handleAttachLabel(newLabel);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || "Failed to create label";
+
+        setError(message);
+      } else {
+        setError("Something went wrong!");
+      }
+    } finally {
+      setIsCreatingLabel(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-5xl px-6 py-8">
@@ -259,7 +387,7 @@ export default function ProjectPage() {
               <div
                 key={task.id}
                 className={`rounded-lg p-4 shadow ${
-                  task.isCompleted ? "bg-green-100" : "bg-white"
+                  task.isCompleted ? "bg-green-400" : "bg-white"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -286,6 +414,35 @@ export default function ProjectPage() {
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {task.labels.map((label) => (
+                      <span
+                        key={label.id}
+                        className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
+                        style={{
+                          backgroundColor: label.color || "#6b7280",
+                        }}
+                      >
+                        {label.name}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLabel(task.id, label.id)}
+                          className="font-bold"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => setLabelTask(task)}
+                      className="rounded border px-2 py-1 text-xs text-gray-600"
+                    >
+                      + Add label
+                    </button>
                   </div>
 
                   <div className="flex gap-2">
@@ -392,6 +549,91 @@ export default function ProjectPage() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {labelTask && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="text-lg font-semibold">
+                Labels for "{labelTask.name}"
+              </h2>
+
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium">Existing labels</p>
+
+                {labels.length === 0 ? (
+                  <p className="text-sm text-gray-500">No labels yet.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {labels.map((label) => {
+                      const attached = labelTask.labels.some(
+                        (taskLabel) => taskLabel.id === label.id,
+                      );
+
+                      return (
+                        <button
+                          key={label.id}
+                          type="button"
+                          onClick={() => {
+                            if (!attached) {
+                              handleAttachLabel(label);
+                            }
+                          }}
+                          disabled={attached}
+                          className="rounded-full px-3 py-1 text-sm text-white disabled:opacity-40"
+                          style={{
+                            backgroundColor: label.color || "#6b7280",
+                          }}
+                        >
+                          {label.name}
+                          {attached ? " ✓" : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <form onSubmit={handleCreateLabel} className="mt-6 border-t pt-4">
+                <p className="mb-3 text-sm font-medium">Create new label</p>
+
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={newLabelName}
+                    onChange={(e) => setNewLabelName(e.target.value)}
+                    placeholder="Label name"
+                    className="flex-1 rounded border px-3 py-2"
+                  />
+
+                  <input
+                    type="color"
+                    value={newLabelColor}
+                    onChange={(e) => setNewLabelColor(e.target.value)}
+                    className="h-10 w-12 cursor-pointer"
+                  />
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setLabelTask(null)}
+                    className="rounded border px-4 py-2"
+                  >
+                    Close
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isCreatingLabel || !newLabelName.trim()}
+                    className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+                  >
+                    {isCreatingLabel ? "Creating..." : "Create label"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </main>

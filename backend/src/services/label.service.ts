@@ -19,6 +19,7 @@ export async function createLabel(
     const label = await prisma.label.create({
         data: {
             name: data.name,
+            color: data.color,
             userId,
         },
     });
@@ -26,7 +27,7 @@ export async function createLabel(
     return label;
 }
 
-export async function getLabels(userId: String) {
+export async function getLabels(userId: string) {
     return await prisma.label.findMany({
         where: {
             userId,
@@ -62,7 +63,7 @@ export async function updateLabel(
     });
 
     if (!label) {
-        throw new Error("Label not found!");
+        throw new Error("Label not found");
     }
 
     return await prisma.label.update({

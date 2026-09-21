@@ -7,6 +7,8 @@ export const createLabelSchema = z.object({
         .toLowerCase()
         .min(1, "Label name is required")
         .max(50, "Label name is too long"),
+
+    color: z.string().optional()
 });
 
 export const updateLabelSchema = z.object({
