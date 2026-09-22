@@ -30,10 +30,12 @@ export default function ProjectPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  const [status, setStatus] = useState<"all" | "pending" | "completed">("all");
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search.trim());
-    }, 3000);
+    }, 1500);
 
     return () => {
       clearTimeout(timer);
@@ -50,6 +52,7 @@ export default function ProjectPage() {
 
         const data = await getTasks(projectId, {
           search: debouncedSearch || undefined,
+          status,
         });
 
         setTasks(data);
@@ -70,7 +73,7 @@ export default function ProjectPage() {
     }
 
     fetchTasks();
-  }, [projectId, debouncedSearch]);
+  }, [projectId, debouncedSearch, status]);
 
   const [taskName, setTaskName] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -402,6 +405,30 @@ export default function ProjectPage() {
             {isCreating ? "Creating..." : "Add Task"}
           </button>
         </form>
+
+        <div className="mb-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setStatus("all")}
+            className="rounded border px-3 py-2"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatus("pending")}
+            className="rounded border px-3 py-2 bg-yellow-300"
+          >
+            Pending
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatus("completed")}
+            className="rounded border px-3 py-2 bg-green-300"
+          >
+            Completed
+          </button>
+        </div>
 
         {isLoading ? (
           <p>Loading tasks...</p>

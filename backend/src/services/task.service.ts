@@ -23,6 +23,9 @@ export async function createTask(
         data: {
             ...data,
             projectId,
+        },
+        include: {
+            labels: true
         }
     });
 
@@ -41,7 +44,7 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
         return null;
     }
 
-    const { search } = query;
+    const { search, status } = query;
 
     return await prisma.task.findMany({
         where: {
@@ -53,6 +56,14 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
                     mode: "insensitive"
                 },
             }),
+
+            ...(status === "pending" && {
+                isCompleted: false,
+            }),
+
+            ...(status === "completed" && {
+                isCompleted: true,
+            })
         },
         include: {
             labels: true,

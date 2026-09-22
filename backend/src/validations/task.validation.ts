@@ -29,8 +29,10 @@ export const updateTaskSchema = z
 
 export const taskQuerySchema = z.object({
     search: z.string().trim().max(100, "Search query is too long").optional(),
+
+    status: z.enum(["all", "completed", "pending"]).optional(),
 })
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
-export type TaskQueryInput = z.infer<typeof taskQuerySchema>
+export type TaskQueryInput = z.infer<typeof taskQuerySchema>;
