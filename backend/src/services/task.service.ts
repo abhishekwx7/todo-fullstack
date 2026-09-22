@@ -1,5 +1,5 @@
 import prisma from "../config/prisma.js";
-import type { CreateTaskInput, UpdateTaskInput } from "../validations/task.validation.js";
+import type { CreateTaskInput, TaskQueryInput, UpdateTaskInput } from "../validations/task.validation.js";
 
 
 export async function createTask(
@@ -29,7 +29,7 @@ export async function createTask(
     return task;
 }
 
-export async function getTasks(projectId: string, userId: string) {
+export async function getTasks(projectId: string, userId: string, query: TaskQueryInput) {
     const project = await prisma.project.findFirst({
         where: {
             id: projectId,
@@ -41,9 +41,18 @@ export async function getTasks(projectId: string, userId: string) {
         return null;
     }
 
+    const { search } = query;
+
     return await prisma.task.findMany({
         where: {
             projectId,
+
+            ...(search && {
+                name: {
+                    contains: search,
+                    mode: "insensitive"
+                },
+            }),
         },
         include: {
             labels: true,
@@ -89,6 +98,9 @@ export async function updateTask(taskId: string, data: UpdateTaskInput, userId: 
             id: taskId,
         },
         data,
+        include: {
+            labels: true,
+        }
     });
 }
 

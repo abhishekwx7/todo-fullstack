@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import * as taskService from "../services/task.service.js";
-import { createTaskSchema, updateTaskSchema } from "../validations/task.validation.js";
+import { createTaskSchema, taskQuerySchema, updateTaskSchema } from "../validations/task.validation.js";
 
 export async function createTask(
     req: AuthRequest,
@@ -69,17 +69,27 @@ export async function getTasks(
         }
 
         const projectId = req.params.projectId;
-        console.log(req.params);
+        // console.log(req.params);
 
         if (!projectId || Array.isArray(projectId)) {
             return res.status(400).json({
                 message: "Project ID is required!"
+            });
+        }
+
+        const result = taskQuerySchema.safeParse(req.query);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: "Invalid query parameters!",
+                errors: result.error.flatten()
             })
         }
 
         const tasks = await taskService.getTasks(
             projectId,
             req.userId,
+            result.data,
         )
 
         if (!tasks) {

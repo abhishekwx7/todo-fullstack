@@ -27,6 +27,10 @@ export const updateTaskSchema = z
         },
     );
 
-export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export const taskQuerySchema = z.object({
+    search: z.string().trim().max(100, "Search query is too long").optional(),
+})
 
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type TaskQueryInput = z.infer<typeof taskQuerySchema>
