@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import {
   createTask,
@@ -27,14 +27,30 @@ export default function ProjectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search]);
+
   useEffect(() => {
     async function fetchTasks() {
       if (!projectId) return;
 
       try {
         setError("");
+        setIsLoading(true);
 
-        const data = await getTasks(projectId);
+        const data = await getTasks(projectId, {
+          search: debouncedSearch || undefined,
+        });
 
         setTasks(data);
       } catch (error) {
@@ -54,7 +70,7 @@ export default function ProjectPage() {
     }
 
     fetchTasks();
-  }, [projectId]);
+  }, [projectId, debouncedSearch]);
 
   const [taskName, setTaskName] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -345,6 +361,16 @@ export default function ProjectPage() {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <h1 className="mb-6 text-2xl font-bold">Tasks</h1>
 
+        <div className="mb-4">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks..."
+            className="w-full rounded-lg border bg-white px-4 py-2 shadow-sm"
+          />
+        </div>
+
         {error && (
           <p className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</p>
         )}
@@ -380,7 +406,11 @@ export default function ProjectPage() {
         {isLoading ? (
           <p>Loading tasks...</p>
         ) : tasks.length === 0 ? (
-          <p className="text-gray-500">No tasks yet. Create your first task.</p>
+          <p className="text-gray-500">
+            {debouncedSearch
+              ? `No tasks found for "${debouncedSearch}".`
+              : `No tasks yet. Create your first task.`}
+          </p>
         ) : (
           <div className="space-y-3">
             {sortedTask.map((task) => (

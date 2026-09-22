@@ -5,12 +5,16 @@ interface getTaskResponse {
     tasks: Task[];
 }
 
-export async function getTasks(projectId: string) {
-    const response = await api.get<getTaskResponse>(
-        `projects/${projectId}/tasks`
-    );
+export interface GetTasksQuery {
+    search?: string;
+}
 
-    // console.log("Task Response : ", response.data)
+export async function getTasks(projectId: string, query?: GetTasksQuery) {
+    const response = await api.get<getTaskResponse>(
+        `projects/${projectId}/tasks`, {
+        params: query,
+    }
+    );
 
     return response.data.tasks;
 }
