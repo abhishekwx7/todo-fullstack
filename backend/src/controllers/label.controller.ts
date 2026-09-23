@@ -113,7 +113,7 @@ export async function getLabelById(
         console.log(error);
 
         return res.status(500).json({
-            message: "Failed to"
+            message: "Failed to fetch label!"
         })
     }
 }
