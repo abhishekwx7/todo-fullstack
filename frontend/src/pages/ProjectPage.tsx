@@ -30,6 +30,9 @@ export default function ProjectPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  const [selectedLabelIds, setSelectedLabelsIds] = useState<string[]>([]);
+  const [isLabelFilterOpen, setIsLabelFilterOpen] = useState(false);
+
   const [status, setStatus] = useState<"all" | "pending" | "completed">("all");
 
   useEffect(() => {
@@ -50,9 +53,17 @@ export default function ProjectPage() {
         setError("");
         setIsLoading(true);
 
+        const hasLabelFilter = selectedLabelIds.length > 0;
+
         const data = await getTasks(projectId, {
-          search: debouncedSearch || undefined,
-          status,
+          ...(hasLabelFilter
+            ? {
+                labels: selectedLabelIds.join(),
+              }
+            : {
+                search: debouncedSearch || undefined,
+                status,
+              }),
         });
 
         setTasks(data);
@@ -73,7 +84,21 @@ export default function ProjectPage() {
     }
 
     fetchTasks();
-  }, [projectId, debouncedSearch, status]);
+  }, [projectId, debouncedSearch, status, selectedLabelIds]);
+
+  function handleToggleFilterLabel(labelId: string) {
+    setSearch("");
+    setDebouncedSearch("");
+    setStatus("all");
+
+    setSelectedLabelsIds((prev) => {
+      if (prev.includes(labelId)) {
+        return prev.filter((id) => id !== labelId);
+      }
+
+      return [...prev, labelId];
+    });
+  }
 
   const [taskName, setTaskName] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -409,26 +434,99 @@ export default function ProjectPage() {
         <div className="mb-4 flex gap-2">
           <button
             type="button"
-            onClick={() => setStatus("all")}
+            onClick={() => {
+              setSelectedLabelsIds([]);
+              setStatus("all");
+            }}
             className="rounded border px-3 py-2"
           >
             All
           </button>
           <button
             type="button"
-            onClick={() => setStatus("pending")}
+            onClick={() => {
+              setSelectedLabelsIds([]);
+              setStatus("pending");
+            }}
             className="rounded border px-3 py-2 bg-yellow-300"
           >
             Pending
           </button>
           <button
             type="button"
-            onClick={() => setStatus("completed")}
+            onClick={() => {
+              setSelectedLabelsIds([]);
+              setStatus("completed");
+            }}
             className="rounded border px-3 py-2 bg-green-300"
           >
             Completed
           </button>
+
+          <button
+            type="button"
+            onClick={() => setIsLabelFilterOpen((prev) => !prev)}
+            className="rounded border px-3 py-2 bg-gray-500"
+          >
+            Filter by labels
+            {selectedLabelIds.length > 0 && ` (${selectedLabelIds.length})`}
+          </button>
         </div>
+
+        {isLabelFilterOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="text-lg font-semibold">Filter by labels</h2>
+
+              <div className="mt-4">
+                {labels.length === 0 ? (
+                  <p className="text-sm text-gray-500">No labels available.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {labels.map((label) => {
+                      const selected = selectedLabelIds.includes(label.id);
+
+                      return (
+                        <button
+                          key={label.id}
+                          type="button"
+                          onClick={() => handleToggleFilterLabel(label.id)}
+                          className={`rounded-full px-3 py-1 text-sm text-white ${
+                            selected ? "ring-2 ring-black" : ""
+                          }`}
+                          style={{
+                            backgroundColor: label.color || "#6b7280",
+                          }}
+                        >
+                          {label.name}
+                          {selected ? " ✓" : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedLabelsIds([])}
+                  className="rounded border px-4 py-2"
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsLabelFilterOpen(false)}
+                  className="rounded bg-blue-600 px-4 py-2 text-white"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isLoading ? (
           <p>Loading tasks...</p>

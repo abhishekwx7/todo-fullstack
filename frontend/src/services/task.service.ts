@@ -8,6 +8,7 @@ interface getTaskResponse {
 export interface GetTasksQuery {
     search?: string;
     status?: "all" | "pending" | "completed";
+    labels?: string;
 }
 
 export async function getTasks(projectId: string, query?: GetTasksQuery) {

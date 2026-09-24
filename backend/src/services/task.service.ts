@@ -44,26 +44,40 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
         return null;
     }
 
-    const { search, status } = query;
+    const { search, status, labels } = query;
+
+    const hasLabelFilter = labels !== undefined && labels.length > 0;
 
     return await prisma.task.findMany({
         where: {
             projectId,
 
-            ...(search && {
-                name: {
-                    contains: search,
-                    mode: "insensitive"
-                },
-            }),
+            ...(hasLabelFilter ? {
+                labels: {
+                    some: {
+                        id: {
+                            in: labels
+                        }
+                    }
+                }
+            } : {
+                ...(search && {
+                    name: {
+                        contains: search,
+                        mode: "insensitive"
+                    },
+                }),
 
-            ...(status === "pending" && {
-                isCompleted: false,
-            }),
+                ...(status === "pending" && {
+                    isCompleted: false,
+                }),
 
-            ...(status === "completed" && {
-                isCompleted: true,
+                ...(status === "completed" && {
+                    isCompleted: true,
+                })
             })
+
+
         },
         include: {
             labels: true,
