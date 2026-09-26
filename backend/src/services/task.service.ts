@@ -44,9 +44,55 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
         return null;
     }
 
-    const { search, status, labels } = query;
+    const { search, status, labels, sort } = query;
 
     const hasLabelFilter = labels !== undefined && labels.length > 0;
+
+    let sortOrder;
+
+    switch (sort) {
+        case "oldest":
+            sortOrder = {
+                createdAt: "asc" as const,
+            };
+            break;
+
+        case "dueDateAsc":
+            sortOrder = {
+                dueDate: {
+                    sort: "asc" as const,
+                    nulls: "last" as const,
+                },
+            };
+            break;
+
+        case "dueDateDesc":
+            sortOrder = {
+                dueDate: {
+                    sort: "desc" as const,
+                    nulls: "last" as const,
+                },
+            };
+            break;
+
+        case "nameAsc":
+            sortOrder = {
+                name: "asc" as const,
+            };
+            break;
+
+        case "nameDesc":
+            sortOrder = {
+                name: "desc" as const,
+            };
+            break;
+
+        case "newest":
+        default:
+            sortOrder = {
+                createdAt: "desc" as const,
+            };
+    }
 
     return await prisma.task.findMany({
         where: {
@@ -75,6 +121,7 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
                 ...(status === "completed" && {
                     isCompleted: true,
                 })
+
             })
 
 
@@ -82,9 +129,12 @@ export async function getTasks(projectId: string, userId: string, query: TaskQue
         include: {
             labels: true,
         },
-        orderBy: {
-            createdAt: "desc"
-        }
+        orderBy: [
+            {
+                isCompleted: "asc",
+            },
+            sortOrder,
+        ]
     })
 }
 

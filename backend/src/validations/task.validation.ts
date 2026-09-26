@@ -30,9 +30,11 @@ export const updateTaskSchema = z
 export const taskQuerySchema = z.object({
     search: z.string().trim().max(100, "Search query is too long").optional(),
 
-    status: z.enum(["all", "completed", "pending"]).optional(),
+    status: z.enum(["all", "completed", "pending"]).optional().default("all"),
 
     labels: z.string().trim().transform((value) => value.split(",").map((id) => id.trim()).filter(Boolean)).optional(),
+
+    sort: z.enum(["newest", "oldest", "dueDateAsc", "dueDateDesc", "nameAsc", "nameDesc"]).optional().default("newest"),
 })
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

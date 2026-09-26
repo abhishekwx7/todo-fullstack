@@ -384,11 +384,14 @@ export default function ProjectPage() {
     }
   }
 
+  {
+    /* JSX PART */
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="mx-auto max-w-5xl px-6 py-8">
         <h1 className="mb-6 text-2xl font-bold">Tasks</h1>
-
         <div className="mb-4">
           <input
             type="search"
@@ -398,11 +401,9 @@ export default function ProjectPage() {
             className="w-full rounded-lg border bg-white px-4 py-2 shadow-sm"
           />
         </div>
-
         {error && (
           <p className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</p>
         )}
-
         <form
           onSubmit={handleCreateTask}
           className="mb-6 flex flex-col gap-3 rounded-lg bg-white p-4 shadow sm:flex-row"
@@ -430,7 +431,6 @@ export default function ProjectPage() {
             {isCreating ? "Creating..." : "Add Task"}
           </button>
         </form>
-
         <div className="mb-4 flex gap-2">
           <button
             type="button"
@@ -528,6 +528,8 @@ export default function ProjectPage() {
           </div>
         )}
 
+        {/* LAOD TASKS */}
+
         {isLoading ? (
           <p>Loading tasks...</p>
         ) : tasks.length === 0 ? (
@@ -620,7 +622,6 @@ export default function ProjectPage() {
             ))}
           </div>
         )}
-
         {taskToDelete && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/40">
             <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
@@ -650,7 +651,6 @@ export default function ProjectPage() {
             </div>
           </div>
         )}
-
         {taskToEdit && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/40">
             <form
@@ -706,7 +706,6 @@ export default function ProjectPage() {
             </form>
           </div>
         )}
-
         {labelTask && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/40">
             <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
